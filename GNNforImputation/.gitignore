@@ -1,0 +1,5 @@
+/data/fodors_zagats-embdi-gnn.emb
+/data/adult_nonulls-embdi-gnn.emb
+/data/*.pickle
+.idea
+/data/run_id
