@@ -1,6 +1,6 @@
 '''
 
-Author: Riccardo Cappuzzo
+Author: XXX
 '''
 
 import argparse
