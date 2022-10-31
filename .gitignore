@@ -3,3 +3,5 @@
 /data/*.pickle
 .idea
 /data/run_id
+.ipynb_checkpoints
+.vscode/
