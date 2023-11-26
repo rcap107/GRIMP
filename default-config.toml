@@ -1,48 +1,60 @@
 # Architecture parameters
-architecture="multitask"
-graph_layers=2
-gnn_feats=16
-jumping_knowledge=false
-h_feats=32
-predictor_layers=2
-head_layers=1
+architecture = "multitask"
+graph_layers = 2
+gnn_feats = 64
+jumping_knowledge = false
+h_feats = 128
+predictor_layers = 2
+head_layers = 2
 
-shared_model="attention"
-head_model="attention"
-k_strat="weak"
+shared_model = "attention"
+head_model = "attention"
+k_strat = "weak"
 
 # Embedding parameters
-random_init=false
+random_init = false
 
 # Debugging parameters
-skip_gnn=false
-no_relu=false
-no_sm=false
-flag_col=false
-flag_rid=false
-loss="xe"
-loss_alpha=0.5
-loss_gamma=2
-module_aggr="gcn"
-heteroconv_aggr="sum"
-max_comb_num=10
-comb_size=1
-training_sample=1.0
+skip_gnn = false
+no_relu = false
+no_sm = false
+flag_col = false
+flag_rid = false
+loss = "xe"
+loss_alpha = 0.5
+loss_gamma = 2
+module_aggr = "gcn"
+heteroconv_aggr = "sum"
+max_comb_num = 10
+comb_size = 1
+training_sample = 1.0
 
 # Training parameters
-epochs=1000
-dropout_gnn=0
-dropout_clf=0
-batchnorm=false
-learning_rate=0.001
-weight_decay=1e-4
-th_stop=1e-5
-grace=1000
-force_training=false
+epochs = 300
+dropout_gnn = 0
+dropout_clf = 0.2
+batchnorm = false
+learning_rate = 0.001
+weight_decay = 1e-4
+th_stop = 1e-5
+grace = 150
+force_training = false
 
 
 # Datasets configuration
 [[dataset_case]]
-ground_truth=""
-dirty_dataset=""
-training_subset="target"
+ground_truth = [
+    "adultsample10",
+    "australian",
+    "contraceptive",
+    "credit",
+    "flare",
+    "fodorszagats",
+    "imdb",
+    "mammogram",
+    "tax5000trimmed",
+    "thoracic",
+    "tictactoe",
+]
+
+training_subset = "target"
