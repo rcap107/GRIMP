@@ -11,29 +11,27 @@ on Graph Neural Networks and attention.
 `run.sh` is a batch script that is used to run experiments on all datasets provided in the script. 
 
 ## Installation
-We strongly recommend to run the code in a python virtual environment or in a conda environment.
+We strongly recommend to run the code in a conda environment.
 
-The required packages are listed in `requirements.txt`.
+### Additional packages
+The required packages are listed in `environment.yaml`.
 
-GRIMP also requires pytorch and dgl in order to run. 
-
-To install pytorch in a conda environment, use the command 
+Create a new conda environment:
 ```
-conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
+conda env create -f environment.yaml
 ```
-With pip:
+Then activate the new environment:
 ```
-pip3 install torch==1.10.0+cu102 torchvision==0.11.1+cu102 torchaudio===0.10.0+cu102 -f https://download.pytorch.org/whl/cu102/torch_stable.html
+conda activate grimp
 ```
 
-To install DGL in conda:
-```
-conda install -c dglteam dgl
-```
-With pip:
-```
-pip install dgl -f https://data.dgl.ai/wheels/repo.html
-```
+
+### Installing PyTorch
+Install PyTorch following the instructions relative to your platform, as explained on [the website](https://pytorch.org/get-started/locally/).
+
+If you have access to GPUs, GRIMP can make use of them to improve the execution time. Refer to the official documentation to install the GPU version of PyTorch.
+
+
 
 # Running the code
 Example configuration
