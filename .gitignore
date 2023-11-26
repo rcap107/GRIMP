@@ -5,3 +5,5 @@
 /data/run_id
 .ipynb_checkpoints
 .vscode/
+/data/
+*/__pycache__/
