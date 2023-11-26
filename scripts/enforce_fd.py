@@ -2,18 +2,21 @@ import pandas as pd
 import argparse
 import os.path as osp
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dataset', '-i', type=str, required=True)
-    parser.add_argument('--fd_path', type=str, required=True)
+    parser.add_argument("--input_dataset", "-i", type=str, required=True)
+    parser.add_argument("--fd_path", type=str, required=True)
 
     args = parser.parse_args()
 
     return args
 
+
 def read_csv(input_path):
     df = pd.read_csv(input_path)
     return df
+
 
 def read_functional_dependencies(fd_filename, df):
     # As implemented in MissForestFD
@@ -36,24 +39,25 @@ def read_functional_dependencies(fd_filename, df):
             fd_dict[rhs] = fd_dict[rhs] + (lhs_attr,)
     return fd_dict
 
+
 def generate_fd_mapping(df, fd_dict):
     full_mapping = dict()
 
     for rhs in fd_dict:
         lhs_c = fd_dict[rhs]
-        full_mapping[rhs]={lhs: None for lhs in lhs_c}
+        full_mapping[rhs] = {lhs: None for lhs in lhs_c}
         for lhs in lhs_c:
-            col_subset = list(lhs + (rhs, ))
+            col_subset = list(lhs + (rhs,))
             df_subset = df[col_subset].dropna(axis=0)
             groups = df_subset.groupby(list(lhs))
             mapping = dict()
             for name, group in groups:
                 uq = group[rhs].unique()[0]
                 if len(lhs) == 1:
-                    mapping[(name,)]=uq
+                    mapping[(name,)] = uq
                 else:
-                    mapping[name]=uq
-            full_mapping[rhs][lhs]=mapping
+                    mapping[name] = uq
+            full_mapping[rhs][lhs] = mapping
     return full_mapping
 
 
@@ -66,18 +70,18 @@ def fix_errors(df: pd.DataFrame, fd: dict, mapping):
                     for lhs in mapping[col]:
                         vals = tuple(row[list(lhs)].values.tolist())
                         if vals in mapping[col][lhs]:
-                            df.loc[idx,col] = mapping[col][lhs][vals]
+                            df.loc[idx, col] = mapping[col][lhs][vals]
                             continue
     return df
 
 
 def save_df(input_dataset, fixed_dataset):
     base, ext = osp.splitext(input_dataset)
-    out_fname = base + '_fixed' + ext
+    out_fname = base + "_fixed" + ext
     fixed_dataset.to_csv(out_fname, index=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
 
     df = read_csv(args.input_dataset)

@@ -8,16 +8,18 @@ from sklearn.decomposition import PCA
 
 
 def convert_embs_to_text(embeddings, graph, emb_path):
-    fout = open(emb_path, 'w')
-    header = f'{embeddings.shape[0]} {embeddings.shape[1]}\n'
+    fout = open(emb_path, "w")
+    header = f"{embeddings.shape[0]} {embeddings.shape[1]}\n"
     fout.write(header)
 
-    nodes = [f'idx__{rid}' for rid in range(graph.num_rows)] + \
-            [f'cid__{cid}' for cid in graph.col2idx] + \
-            [f'tt__{val}' for val in graph.val2idx]
+    nodes = (
+        [f"idx__{rid}" for rid in range(graph.num_rows)]
+        + [f"cid__{cid}" for cid in graph.col2idx]
+        + [f"tt__{val}" for val in graph.val2idx]
+    )
 
     for idx, node in enumerate(nodes):
-        s = f'{node} ' + ' '.join([str(_) for _ in embeddings[idx, :]]) + '\n'
+        s = f"{node} " + " ".join([str(_) for _ in embeddings[idx, :]]) + "\n"
         fout.write(s)
 
     fout.close()
@@ -26,17 +28,17 @@ def convert_embs_to_text(embeddings, graph, emb_path):
 def save_model_to_file(model_file, graph_dataset, gnn_model, prediction_model=None):
     with torch.no_grad():
         model = dict()
-        model['graph_dataset'] = graph_dataset
-        model['gnn_model'] = gnn_model
-        model['prediction_model'] = prediction_model
-        pickle.dump(model, open(model_file, 'wb'))
+        model["graph_dataset"] = graph_dataset
+        model["gnn_model"] = gnn_model
+        model["prediction_model"] = prediction_model
+        pickle.dump(model, open(model_file, "wb"))
 
 
 def load_model_from_file(model_file):
-    model = pickle.load(open(model_file, 'rb'))
-    graph_dataset =model['graph_dataset']
-    gnn_model = model['gnn_model']
-    prediction_model = model['prediction_model']
+    model = pickle.load(open(model_file, "rb"))
+    graph_dataset = model["graph_dataset"]
+    gnn_model = model["gnn_model"]
+    prediction_model = model["prediction_model"]
 
     return graph_dataset, gnn_model, prediction_model
 
@@ -45,33 +47,35 @@ class Features:
     def __init__(self, path, categorical_columns, numerical_columns):
         self.path = path
 
-        with open(self.path, 'r') as fp:
-            self.rows, self.dim = [int(_) for _ in fp.readline().strip().split(' ')]
+        with open(self.path, "r") as fp:
+            self.rows, self.dim = [int(_) for _ in fp.readline().strip().split(" ")]
             self.feats = torch.empty((self.rows, self.dim))
             self.ext_features = dict()
             for idx, row in enumerate(fp):
-                token, vector = row.strip().split(' ', maxsplit=1)
-                if token.startswith('tt__'): token = token.replace('tt__', '', 1)
-                if token.startswith('tn__'): token = token.replace('tn__', '', 1)
+                token, vector = row.strip().split(" ", maxsplit=1)
+                if token.startswith("tt__"):
+                    token = token.replace("tt__", "", 1)
+                if token.startswith("tn__"):
+                    token = token.replace("tn__", "", 1)
 
                 if token in self.ext_features:
-                    raise ValueError(f'Found duplicate token {token}')
-                if token.startswith('cid__') or token.startswith('idx__'):
+                    raise ValueError(f"Found duplicate token {token}")
+                if token.startswith("cid__") or token.startswith("idx__"):
                     new_token = token
                 else:
-                    prefix, val = token.split('_', maxsplit=1)
+                    prefix, val = token.split("_", maxsplit=1)
                     if prefix in numerical_columns:
-                            val = str(round(float(val), 8))
-                            new_token = f'{prefix}_{val}'
+                        val = str(round(float(val), 8))
+                        new_token = f"{prefix}_{val}"
                     else:
                         new_token = token
 
-                tt = torch.Tensor([float(_) for _ in vector.split(' ')]).reshape(1,self.dim)
+                tt = torch.Tensor([float(_) for _ in vector.split(" ")]).reshape(
+                    1, self.dim
+                )
                 tt = F.normalize(tt)
                 self.ext_features[new_token] = tt
                 # self.feats[idx, :] = torch.Tensor([float(_) for _ in vector.split(' ')]).reshape(1,self.dim)
-
-
 
     def get_keys(self):
         return list(self.ext_features.keys())
@@ -82,21 +86,27 @@ class Features:
 
 def read_external_features(df_path, path_list, max_comp=32):
     df = pd.read_csv(df_path)
-    categorical_columns = df.select_dtypes(exclude='number').columns.to_list()
+    categorical_columns = df.select_dtypes(exclude="number").columns.to_list()
     numerical_columns = [_ for _ in df.columns if _ not in categorical_columns]
 
-    cat_idxs = [f'c_{idx}' for idx, col in enumerate(df.columns) if col in categorical_columns]
-    num_idxs = [f'c_{idx}' for idx, col in enumerate(df.columns) if col in numerical_columns]
+    cat_idxs = [
+        f"c_{idx}" for idx, col in enumerate(df.columns) if col in categorical_columns
+    ]
+    num_idxs = [
+        f"c_{idx}" for idx, col in enumerate(df.columns) if col in numerical_columns
+    ]
 
     full_features = dict()
     for ext_features_path in path_list:
-        full_features[ext_features_path] = Features(ext_features_path, cat_idxs, num_idxs)
+        full_features[ext_features_path] = Features(
+            ext_features_path, cat_idxs, num_idxs
+        )
 
     common_tokens = []
     total_num_dims = 0
     for path in path_list:
         common_tokens += full_features[path].get_keys()
-        total_num_dims+=full_features[path].get_shape()[1]
+        total_num_dims += full_features[path].get_shape()[1]
     common_tokens = list(set(common_tokens))
 
     ext_features = {token: None for token in common_tokens}
@@ -104,7 +114,7 @@ def read_external_features(df_path, path_list, max_comp=32):
     for idx, token in enumerate(common_tokens):
         start_features = 0
         full_vector = torch.zeros(1, total_num_dims)
-        for _,path in enumerate(full_features, start=1):
+        for _, path in enumerate(full_features, start=1):
             dims = full_features[path].get_shape()[1]
             end_features = start_features + dims
             if token in full_features[path].ext_features:
@@ -130,7 +140,7 @@ def read_features_tensor(tensor_path):
 
 
 def read_functional_dependencies(fd_filename, df_path):
-    df = pd.read_csv(df_path, dtype='object')
+    df = pd.read_csv(df_path, dtype="object")
     # As implemented in MissForestFD
     with open(fd_filename) as f:
         lines = f.readlines()

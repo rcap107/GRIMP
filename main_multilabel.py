@@ -11,13 +11,17 @@ from numpy import inf
 import GRIMP.gnn_models as gnn_models
 import GRIMP.multilabel_training as mlt
 import GRIMP.testing_utils as testing_utils
-from GRIMP.gnn_utils import (convert_embs_to_text, load_model_from_file,
-                             read_external_features, read_features_tensor,
-                             read_functional_dependencies, save_model_to_file)
+from GRIMP.gnn_utils import (
+    convert_embs_to_text,
+    load_model_from_file,
+    read_external_features,
+    read_features_tensor,
+    read_functional_dependencies,
+    save_model_to_file,
+)
 from GRIMP.heterograph_dataset import HeterographDataset
 from GRIMP.logging import GrimpLogger as Logger
-from GRIMP.multilabel_graph_dataset import \
-    ImputationTripartiteGraphMultilabelClassifier
+from GRIMP.multilabel_graph_dataset import ImputationTripartiteGraphMultilabelClassifier
 from GRIMP.multitask_predictor import MultiTaskPredictor
 
 logger = Logger()

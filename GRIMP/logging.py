@@ -1,8 +1,8 @@
 """This script is used to prepare pickle objects that log all the info relative to a specific experimental run. This
-was supposed to be an ad-hoc implementation that would work readily for GRIMP, so it is not refined at all. It was 
-"good enough" for the experiments. 
+was supposed to be an ad-hoc implementation that would work readily for GRIMP, so it is not refined at all. It was
+"good enough" for the experiments.
 
-The paths used by the logger can be provided by the user, or can use the default values used here. 
+The paths used by the logger can be provided by the user, or can use the default values used here.
 
 Raises:
     ValueError: _description_
@@ -23,7 +23,7 @@ import json
 import pandas as pd
 from abc import abstractmethod, ABC
 
-# Setting the default path for all files. Assumes that the dir tree is already built. 
+# Setting the default path for all files. Assumes that the dir tree is already built.
 RESULTS_PATH = osp.realpath("results")
 PLOTS_PATH = osp.realpath("results/plots")
 JSON_PATH = osp.join(RESULTS_PATH, "json")
@@ -41,8 +41,8 @@ class Logger(ABC):
         plots_path=PLOTS_PATH,
     ):
 
-        # All paths below are normally kept as default, but can be provided by 
-        # the user. 
+        # All paths below are normally kept as default, but can be provided by
+        # the user.
         self.run_id_path = run_id_path
         self.run_name = None
         self.results_path = results_path
@@ -50,7 +50,7 @@ class Logger(ABC):
 
         self.run_id = self.find_latest_run_id()
         if file_path is None:
-            # If no pre-existing path is provided, create a new empty logger file. 
+            # If no pre-existing path is provided, create a new empty logger file.
             self.obj = dict()
             self.obj["run_id"] = self.run_id
             self.obj["timestamps"] = dict()
@@ -71,7 +71,7 @@ class Logger(ABC):
             self.run_id = self.obj["run_id"]
 
     def find_latest_run_id(self):
-        """Utility function for opening the run_id file, checking for errors and 
+        """Utility function for opening the run_id file, checking for errors and
         incrementing it by one at the start of a run.
 
         Raises:
@@ -111,16 +111,16 @@ class Logger(ABC):
         self.obj[obj_name].update(obj)
 
     def update_dict(self, obj_name, obj):
-        """Update the given object with a new dictionary. 
+        """Update the given object with a new dictionary.
 
         Args:
             obj_name (str): Label of the object to update.
-            obj (dict): Dictionary to be added to the given obj. 
+            obj (dict): Dictionary to be added to the given obj.
         """
         self.obj[obj_name].update(obj)
 
     def add_value(self, obj_name, key, value):
-        """Updating a single value in a given object. 
+        """Updating a single value in a given object.
 
         Args:
             obj_name (str): Label of the object to update.
@@ -130,16 +130,16 @@ class Logger(ABC):
         self.obj[obj_name][key] = value
 
     def add_run_name(self, name):
-        """Generic function for setting a run name provided by the user. 
+        """Generic function for setting a run name provided by the user.
 
         Args:
-            name (str): Name to be assigned to this run. 
+            name (str): Name to be assigned to this run.
         """
         self.obj["parameters"]["run_name"] = name
         self.run_name = name
 
     def get_value(self, obj_name, key):
-        """Retrieve a single value from one of the dictionaries. 
+        """Retrieve a single value from one of the dictionaries.
 
         Args:
             obj_name (str): Label of the object to query.
@@ -151,7 +151,7 @@ class Logger(ABC):
         return self.obj[obj_name][key]
 
     def add_time(self, label):
-        """Add a new timestamp starting __now__, with the given label. 
+        """Add a new timestamp starting __now__, with the given label.
 
         Args:
             label (str): Label to assign to the timestamp.
@@ -159,27 +159,27 @@ class Logger(ABC):
         self.obj["timestamps"][label] = dt.datetime.now()
 
     def get_time(self, label):
-        """Retrieve a time according to the given label.    
+        """Retrieve a time according to the given label.
 
         Args:
-            label (str): Label of the timestamp to be retrieved. 
+            label (str): Label of the timestamp to be retrieved.
         Returns:
             _type_: Retrieved timestamp.
         """
         return self.obj["timestamp"][label]
 
     def add_duration(self, label_start, label_end, label_duration):
-        """Create a new duration as timedelta. The timedelta is computed on the 
+        """Create a new duration as timedelta. The timedelta is computed on the
         basis of the given start and end labels, and is assigned the given label.
 
         Args:
             label_start (str): Label of the timestamp to be used as start.
             label_end (str): Label of the timestamp to be used as end.
-            label_duration (str): Label of the new timedelta object. 
-        """        
+            label_duration (str): Label of the new timedelta object.
+        """
         assert label_start in self.obj["timestamps"]
         assert label_end in self.obj["timestamps"]
-        
+
         self.obj["durations"][label_duration] = (
             self.obj["timestamps"][label_end] - self.obj["timestamps"][label_start]
         ).total_seconds()
@@ -212,12 +212,11 @@ class Logger(ABC):
     @abstractmethod
     def get_header():
         """Abstract class, this should be implemented by the user with the proper
-        header for the task at hand. This header is relative to the rolling 
-        results logging file. 
+        header for the task at hand. This header is relative to the rolling
+        results logging file.
         """
         pass
-    
-    
+
     def print_selected(self, selected_dict):
         # TODO: this function is not done
         for obj_dict in selected_dict:
@@ -227,7 +226,7 @@ class Logger(ABC):
 
     def update_result_file(self):
         """Update the result file with the string produced by pprint. If the file
-        does not exist, create it, then update it. 
+        does not exist, create it, then update it.
         """
         if osp.exists(osp.join(self.results_path, "results.csv")):
             with open(osp.join(self.results_path, "results.csv"), "a") as fp:
@@ -239,10 +238,10 @@ class Logger(ABC):
             with open(osp.join(self.results_path, "results.csv"), "a") as fp:
                 fp.write(self.pprint())
 
+
 class GrimpLogger(Logger):
-    
     def add_run_name(self):
-        """Set the default run name, based on the name of the dirty dataset (note that the name includes the error 
+        """Set the default run name, based on the name of the dirty dataset (note that the name includes the error
         fraction in the given dataset.)
         """
         basename = osp.basename(self.obj["parameters"]["dirty_dataset"])
@@ -250,14 +249,13 @@ class GrimpLogger(Logger):
         self.obj["parameters"]["run_name"] = name
         self.run_name = name
 
-    
     def pprint(self):
-        """Implementation of the pprint method. The statistics and parameters 
-        are all over the place because of backwards compatibility with previous 
-        code. 
+        """Implementation of the pprint method. The statistics and parameters
+        are all over the place because of backwards compatibility with previous
+        code.
 
         Returns:
-            str: Pretty-printed output of the logger. 
+            str: Pretty-printed output of the logger.
         """
         self.summary = ""
         values = [
@@ -309,8 +307,8 @@ class GrimpLogger(Logger):
         return s + "\n"
 
     def plot_curves(self):
-        """Plot the training/validation loss curves for the given run. Minimum 
-        and final values for both losses is also added to the plots. Plots are 
+        """Plot the training/validation loss curves for the given run. Minimum
+        and final values for both losses is also added to the plots. Plots are
         saved in the folder indicated by self.plots_path.
         """
         loss = self["curves"]["loss"]
@@ -334,8 +332,7 @@ class GrimpLogger(Logger):
         plt.savefig(osp.join(self.plots_path, f"{self.run_id}.png"))
 
     def print_summary(self):
-        """Print on screen a summary of this run, with the main parameters. 
-        """
+        """Print on screen a summary of this run, with the main parameters."""
         print(f"Run ID:{self.run_id}")
         print(f"Dataset: {self.obj['parameters']['dirty_dataset']}"),
         print(f"Training columns: {self.obj['parameters']['training_columns']}")
@@ -396,7 +393,7 @@ class GrimpLogger(Logger):
         return header
 
     def save_obj(self, file_path=None, plot_figures=False):
-        """Save the log package in the given file, update the results file with 
+        """Save the log package in the given file, update the results file with
         the results from the current run and plot figures if needed.
 
         Args:
@@ -422,7 +419,7 @@ class GrimpLogger(Logger):
         ofp = open(osp.join(JSON_PATH, fpath), "w")
         json.dump(result_dict, ofp, indent=2)
         ofp.close()
-        
+
     def add_df_stats(self, df):
         """Simple function for adding the dataframe statistics to the logger.
 
@@ -436,9 +433,7 @@ class GrimpLogger(Logger):
         self.obj["statistics"]["num_missing_values"] = num_missing_values
 
 
-
 def logging(parameters, results):
     logger = Logger()
     logger.add_dict("parameters", parameters)
     logger.add_dict("results", results)
-

@@ -7,7 +7,7 @@ import torch.nn.functional as F
 class MLPPredictor(nn.Module):
     def __init__(self, h_feats, num_layers=2, predict_edges=False):
         super().__init__()
-        self.name='mlp'
+        self.name = "mlp"
         self.h_feats = h_feats
         self.out_feats = 1
         self.predict_edges = predict_edges
@@ -22,7 +22,7 @@ class MLPPredictor(nn.Module):
 
         layers.append(nn.Linear(self.in_feats, self.h_feats))
         layers.append(nn.ReLU())
-        for l in range(1, num_layers-1):
+        for l in range(1, num_layers - 1):
             layers.append(nn.Linear(self.h_feats, self.h_feats))
             # layers.append(nn.ReLU())
             # layers.append(nn.Dropout(p=0.1))
@@ -30,21 +30,21 @@ class MLPPredictor(nn.Module):
         layers.append(nn.Sigmoid())
         self.model = nn.Sequential(*layers)
 
-
         # self.W1 = nn.Linear(h_feats * 3, h_feats)
         # self.W2 = nn.Linear(h_feats, 1)
         self.triplet_embedding_matrix = None
 
-
     def has_neg(self):
-         return True
+        return True
 
     def compute_triplet_matrix(self, h, triplets):
         num_triplets = len(triplets)
         # print("no grad")
 
         if self.predict_edges:
-            self.triplet_embedding_matrix = h[[triplets]].reshape(len(triplets), self.h_feats * 2)
+            self.triplet_embedding_matrix = h[[triplets]].reshape(
+                len(triplets), self.h_feats * 2
+            )
         else:
             # self.triplet_embedding_matrix = h[[triplets]].reshape(len(triplets), self.h_feats * 3)
             self.triplet_embedding_matrix = h[[triplets]].mean(dim=1)
@@ -73,7 +73,7 @@ class MLPPredictor(nn.Module):
 class TrueFalsePredictor(nn.Module):
     def __init__(self, h_feats, predict_edges=False):
         super().__init__()
-        self.name = 'truefalse'
+        self.name = "truefalse"
         self.h_feats = h_feats
         # The input is a triplet embedding of dimension 3 * h_feats
         # self.W1 = nn.Linear(h_feats * 2, h_feats)
@@ -91,9 +91,13 @@ class TrueFalsePredictor(nn.Module):
         # print("no grad")
 
         if self.predict_edges:
-            self.triplet_embedding_matrix = h[[triplets]].reshape(len(triplets), self.h_feats * 2)
+            self.triplet_embedding_matrix = h[[triplets]].reshape(
+                len(triplets), self.h_feats * 2
+            )
         else:
-            self.triplet_embedding_matrix = h[[triplets]].reshape(len(triplets), self.h_feats * 3)
+            self.triplet_embedding_matrix = h[[triplets]].reshape(
+                len(triplets), self.h_feats * 3
+            )
         # for index, triplet in enumerate(triplets):
         #     row_node_id, col_node_id, cell_node_id = triplet
         #
@@ -110,7 +114,9 @@ class TrueFalsePredictor(nn.Module):
         self.compute_triplet_matrix(h, triplets)
         res = self.W2(F.relu(self.W1(self.triplet_embedding_matrix)))
         return res
-        return torch.softmax(F.relu(self.W2(F.relu(self.W1(self.triplet_embedding_matrix)))), dim=1).squeeze(1)
+        return torch.softmax(
+            F.relu(self.W2(F.relu(self.W1(self.triplet_embedding_matrix)))), dim=1
+        ).squeeze(1)
 
 
 class TripletPredictor(nn.Module):
@@ -119,52 +125,48 @@ class TripletPredictor(nn.Module):
         self.triplet_embedding_matrix = None
         self.in_feats = in_feats
         self.h_feats = h_feats
-        self.W1 = nn.Linear(self.h_feats, self.h_feats//2)
-        self.W2 = nn.Linear(self.h_feats//2, self.h_feats//2)
-        self.W3 = nn.Linear(self.h_feats//2, out_feat)
+        self.W1 = nn.Linear(self.h_feats, self.h_feats // 2)
+        self.W2 = nn.Linear(self.h_feats // 2, self.h_feats // 2)
+        self.W3 = nn.Linear(self.h_feats // 2, out_feat)
 
         self.output_layer = nn.Sigmoid()
-
 
     def has_neg(self):
         return True
 
     def compute_triplet_matrix(self, h, triplets):
         items, trip, candidates = triplets.shape
-        reshaped = h[triplets.reshape(items, trip*candidates)]
-        self.triplet_embedding_matrix = reshaped.reshape(items, self.h_feats).mean(dim=1)
+        reshaped = h[triplets.reshape(items, trip * candidates)]
+        self.triplet_embedding_matrix = reshaped.reshape(items, self.h_feats).mean(
+            dim=1
+        )
         # self.triplet_embedding_matrix = h[triplets].reshape(len(triplets), self.h_feats)
 
     def forward(self, h, triplets):
         # res = self.W2(F.relu(self.W1(h)))
         # h_triplets =
         self.compute_triplet_matrix(h, triplets)
-        res = self.W3(
-            F.relu(
-                self.W2(
-                    F.relu(
-                        self.W1(
-                            self.triplet_embedding_matrix)))))
+        res = self.W3(F.relu(self.W2(F.relu(self.W1(self.triplet_embedding_matrix)))))
         return F.softmax(res)
 
 
-
-
 class NearestNeighborPredictor(nn.Module):
-    def __init__(self, in_feats, h_feats, input_tuple_length,num_layers=2, device='cpu'):
+    def __init__(
+        self, in_feats, h_feats, input_tuple_length, num_layers=2, device="cpu"
+    ):
         super().__init__()
-        self.device=device
-        self.name='nn'
+        self.device = device
+        self.name = "nn"
         self.h_feats = h_feats
         # The number of out_feats must be the same as the number of feats in a node
         self.out_feats = 1
         # The input contains input_tuple_length * in_feats features
-        self.in_feats = input_tuple_length*in_feats
+        self.in_feats = input_tuple_length * in_feats
         layers = []
 
         layers.append(nn.Linear(self.in_feats, self.h_feats))
         layers.append(nn.ReLU())
-        for l in range(1, num_layers-1):
+        for l in range(1, num_layers - 1):
             layers.append(nn.Linear(self.h_feats, self.h_feats))
             layers.append(nn.ReLU())
             # layers.append(nn.Dropout(p=0.1))
@@ -175,7 +177,7 @@ class NearestNeighborPredictor(nn.Module):
         for model_layer in range(len(self.model)):
             self.model[model_layer] = self.model[model_layer].to(self.device)
 
-        if self.device == 'cuda':
+        if self.device == "cuda":
             self.model.cuda(self.device)
 
         self.tuple_embedding_matrix = None
@@ -185,10 +187,14 @@ class NearestNeighborPredictor(nn.Module):
 
     def mask_tuple_matrix(self, step):
         mask_range = [step * self.out_feats, (step + 1) * self.out_feats]
-        self.tuple_embedding_matrix[:, range(*mask_range)] = torch.zeros(size=(self.tuple_embedding_matrix.shape[0], self.out_feats)).to(self.device)
+        self.tuple_embedding_matrix[:, range(*mask_range)] = torch.zeros(
+            size=(self.tuple_embedding_matrix.shape[0], self.out_feats)
+        ).to(self.device)
 
     def forward(self, h, triplets):
-        self.tuple_embedding_matrix = self.compute_tuple_matrix(h, triplets).to(self.device)
+        self.tuple_embedding_matrix = self.compute_tuple_matrix(h, triplets).to(
+            self.device
+        )
         # self.mask_tuple_matrix(step)
         # self.tuple_embedding_matrix = self.tuple_embedding_matrix.to(self.device)
 
@@ -201,7 +207,7 @@ class NearestNeighborPredictor(nn.Module):
         return res
 
     def evaluate(self, h, triplets):
-        tuple_matrix = self.compute_tuple_matrix(h,triplets)
+        tuple_matrix = self.compute_tuple_matrix(h, triplets)
         h = self.model[0](tuple_matrix)
         for layer in self.model[1:]:
             h = layer(h)
@@ -209,15 +215,18 @@ class NearestNeighborPredictor(nn.Module):
         # res = torch.sigmoid(self.W2(F.relu(self.W1(h))))
         return res
 
+
 class TupleAveragePredictor(nn.Module):
-    def __init__(self, in_feats, h_feats, input_tuple_length,num_layers=2, device='cpu'):
+    def __init__(
+        self, in_feats, h_feats, input_tuple_length, num_layers=2, device="cpu"
+    ):
         super().__init__()
-        self.device=device
-        self.name='nn'
+        self.device = device
+        self.name = "nn"
         self.h_feats = h_feats
         # The number of out_feats must be the same as the number of feats in a node
         self.out_feats = 1
-        self.in_feats = 2*in_feats
+        self.in_feats = 2 * in_feats
         # The input contains input_tuple_length * in_feats features
         # self.W1 = nn.Linear(self.in_feats, self.h_feats)
         # self.W2 = nn.Linear(self.h_feats, self.out_feats)
@@ -225,7 +234,7 @@ class TupleAveragePredictor(nn.Module):
 
         layers.append(nn.Linear(self.in_feats, self.h_feats))
         layers.append(nn.ReLU())
-        for l in range(1, num_layers-1):
+        for l in range(1, num_layers - 1):
             layers.append(nn.Linear(self.h_feats, self.h_feats))
             layers.append(nn.ReLU())
             # layers.append(nn.Dropout(p=0.1))
@@ -236,7 +245,7 @@ class TupleAveragePredictor(nn.Module):
         for model_layer in range(len(self.model)):
             self.model[model_layer] = self.model[model_layer].to(self.device)
 
-        if self.device == 'cuda':
+        if self.device == "cuda":
             self.model.cuda(self.device)
 
         self.tuple_embedding_matrix = None
@@ -250,10 +259,14 @@ class TupleAveragePredictor(nn.Module):
 
     def mask_tuple_matrix(self, step):
         mask_range = [step * self.out_feats, (step + 1) * self.out_feats]
-        self.tuple_embedding_matrix[:, range(*mask_range)] = torch.zeros(size=(self.tuple_embedding_matrix.shape[0], self.out_feats)).to(self.device)
+        self.tuple_embedding_matrix[:, range(*mask_range)] = torch.zeros(
+            size=(self.tuple_embedding_matrix.shape[0], self.out_feats)
+        ).to(self.device)
 
     def forward(self, gnn_h, tuples, triplets):
-        self.tuple_embedding_matrix = self.compute_tuple_matrix(gnn_h, tuples, triplets).to(self.device)
+        self.tuple_embedding_matrix = self.compute_tuple_matrix(
+            gnn_h, tuples, triplets
+        ).to(self.device)
 
         h = self.model[0](self.tuple_embedding_matrix).to(self.device)
         for layer in self.model[1:]:
