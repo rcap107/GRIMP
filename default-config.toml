@@ -13,6 +13,8 @@ k_strat = "weak"
 
 # Embedding parameters
 random_init = false
+seed=1234
+max_components=300
 
 # Debugging parameters
 skip_gnn = false
@@ -28,6 +30,9 @@ heteroconv_aggr = "sum"
 max_comb_num = 10
 comb_size = 1
 training_sample = 1.0
+load_model_file_path=false
+save_model_file_path = false
+save_imputed_df = true
 
 # Training parameters
 epochs = 300
@@ -42,7 +47,6 @@ force_training = false
 
 
 # Datasets configuration
-[[dataset_case]]
 ground_truth = [
     "adultsample10",
     "australian",
@@ -58,3 +62,8 @@ ground_truth = [
 ]
 
 training_subset = "target"
+
+error_fraction  = ["05", "20", "50"]
+emb = ["ft", "embdi_f4"]
+n_iter=2
+fd_path=false
