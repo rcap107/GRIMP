@@ -11,7 +11,7 @@ Raises:
 Returns:
     _type_: _description_
 """
-
+from pathlib import Path
 import pickle
 import datetime as dt
 import matplotlib.pyplot as plt
@@ -409,7 +409,10 @@ class GrimpLogger(Logger):
         result_dict = {
             "dataset_name": self.run_name,
             "imputation_method": "GRIMP",
-            "run_params": self.obj["parameters"],
+            "run_params": {
+                k: str(v) if isinstance(v, Path) else v
+                for k, v in self.obj["parameters"].items()
+            },
             "start_time": self.obj["timestamps"]["start_training"].isoformat(),
             "end_time": self.obj["timestamps"]["end_training"].isoformat(),
             "exec_time": self.obj["durations"]["duration_training"],

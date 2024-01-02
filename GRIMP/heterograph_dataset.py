@@ -158,7 +158,7 @@ class HeterographDataset(DGLDataset):
         self.training_columns = training_columns
         self.ignore_columns = ignore_columns
         self.ignore_num_flag = ignore_num_flag
-        self.convert_columns = convert_columns
+        self.convert_columns = convert_columns if convert_columns is not None else []
         self.norm_strategy = norm_strategy
 
         self.dirty_columns = []
