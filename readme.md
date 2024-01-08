@@ -9,7 +9,9 @@ on Graph Neural Networks and attention.
 `main.py` is used to run the actual code.
 
 # Datasets
-All datasets and their respeective pre-trained embeddings will be uploaded on zenodo.
+All data required is available at https://zenodo.org/records/10472239.
+
+To run the experiments, extract the zip archive in the root dir: all required files are contained in the folder `data`.
 
 # Installation
 We strongly recommend to run the code in a conda environment.
