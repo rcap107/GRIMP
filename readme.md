@@ -1,8 +1,10 @@
 GRIMP
 ===
+This repository contains the code for the paper [Relational Data Imputation with Graph Neural Networks](https://openproceedings.org/2024/conf/edbt/paper-62.pdf).
 
 GRIMP is a data imputation system that imputes missing values in dirty datasets by relying
-on Graph Neural Networks and attention.
+on Graph Neural Networks and Multi Task Learning. 
+
 
 `main_corruption.py` is used to generate dataset that contain missing values according to certain rules.
 
@@ -58,3 +60,14 @@ available at `https://fasttext.cc/docs/en/english-vectors.html`.
 It will then list the files in the directory `data/to_pretrain` and generate embeddings for each of them, saving them
 in the directory `data/pretrained-emb`. The dataset in `to_pretrain` should be the exact same datasets that will be used
 in the training procedure as "dirty datasets".
+
+# Citing this work
+If you want to use this repository, please cite our work as follows:
+```
+@inproceedings{cappuzzo2024,
+  title={Relational Data Imputation with Graph Neural Networks},
+  author={Cappuzzo, Riccardo and Papotti, Paolo and Thirumuruganathan, Saravanan},
+  booktitle={{EDBT}},
+  year={2024}
+}
+```
